@@ -74,7 +74,7 @@
 #endif
 
 /* HAL */
-#include "hal_lcd.h"
+#include "hal_oled_iic.h"
 #include "hal_led.h"
 #include "hal_key.h"
 #include "hal_uart.h"
@@ -212,9 +212,9 @@ void GenericApp_Init( byte task_id )
   HalUARTWrite(0,"system start\r\n",14);
 
   // Update the display
-#if defined ( LCD_SUPPORTED )
-    HalLcdWriteString( "GenericApp", HAL_LCD_LINE_1 );
-#endif
+
+  OLED_ShowString(16,0,"GenericApp",10);
+
     
   ZDO_RegisterForZDOMsg( GenericApp_TaskID, End_Device_Bind_rsp );
   ZDO_RegisterForZDOMsg( GenericApp_TaskID, Match_Desc_rsp );
@@ -483,9 +483,7 @@ void GenericApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
     case GENERICAPP_CLUSTERID:
      
       // "the" message
-#if defined( LCD_SUPPORTED )
-      HalLcdWriteScreen( (char*)pkt->cmd.Data, "rcvd" );
-#elif defined( WIN32 )
+#if defined( WIN32 )
       WPRINTSTR( pkt->cmd.Data );
 #endif
       break;

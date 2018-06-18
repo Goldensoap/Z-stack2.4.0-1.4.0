@@ -430,6 +430,11 @@ st( \
 #define HAL_LCD FALSE
 #endif
 
+/*Set to TRUE enable OLED_IIC usage, FALSE disable it*/
+#ifndef HAL_OLED_IIC
+#define HAL_OLED_IIC TRUE
+#endif
+
 /* Set to TRUE enable LED usage, FALSE disable it */
 #ifndef HAL_LED
 #define HAL_LED TRUE

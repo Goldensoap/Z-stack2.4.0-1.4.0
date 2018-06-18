@@ -22,7 +22,7 @@
   its documentation for any purpose.
 
   YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+  PROVIDED “AS IS?WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
   INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE,
   NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
   TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
@@ -50,6 +50,7 @@
 #endif
 #include "hal_key.h"
 #include "hal_lcd.h"
+#include "hal_oled_iic.h"
 #include "hal_led.h"
 #include "hal_timer.h"
 #include "hal_uart.h"
@@ -151,7 +152,12 @@ void HalDriverInit (void)
 #if (defined HAL_LCD) && (HAL_LCD == TRUE)
   HalLcdInit();
 #endif
-
+  
+  /*OLED_iic*/
+#if (defined HAL_OLED_IIC) && (HAL_OLED_IIC == TRUE)
+  OLED_Init();
+#endif
+  
   /* LED */
 #if (defined HAL_LED) && (HAL_LED == TRUE)
   HalLedInit();
