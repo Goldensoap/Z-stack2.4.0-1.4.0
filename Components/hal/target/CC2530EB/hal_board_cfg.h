@@ -22,7 +22,7 @@
   its documentation for any purpose.
 
   YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+  PROVIDED ï¿½AS IS?WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
   INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE,
   NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
   TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
@@ -110,22 +110,22 @@
 #define HAL_LED_BLINK_DELAY()   st( { volatile uint32 i; for (i=0; i<0x5800; i++) { }; } )
 
 /* 1 - Green */
-#define LED1_BV           BV(0)
-#define LED1_SBIT         P1_0
-#define LED1_DDR          P1DIR
+#define LED1_BV           BV(4)
+#define LED1_SBIT         P0_4
+#define LED1_DDR          P0DIR
 #define LED1_POLARITY     ACTIVE_HIGH
 
 #if defined (HAL_BOARD_CC2530EB_REV17)
   /* 2 - Red */
-  #define LED2_BV           BV(1)
-  #define LED2_SBIT         P1_1
-  #define LED2_DDR          P1DIR
+  #define LED2_BV           BV(5)
+  #define LED2_SBIT         P0_5
+  #define LED2_DDR          P0DIR
   #define LED2_POLARITY     ACTIVE_HIGH
 
   /* 3 - Yellow */
-  #define LED3_BV           BV(4)
-  #define LED3_SBIT         P1_4
-  #define LED3_DDR          P1DIR
+  #define LED3_BV           BV(5)
+  #define LED3_SBIT         P0_5
+  #define LED3_DDR          P0DIR
   #define LED3_POLARITY     ACTIVE_HIGH
 #endif
 
@@ -138,20 +138,13 @@
 #define ACTIVE_HIGH       !!    /* double negation forces result to be '1' */
 
 /* S1 */
-#define PUSH1_BV          BV(1)
-#define PUSH1_SBIT        P0_1
-
-#if defined (HAL_BOARD_CC2530EB_REV17)
-  #define PUSH1_POLARITY    ACTIVE_HIGH
-#elif defined (HAL_BOARD_CC2530EB_REV13)
-  #define PUSH1_POLARITY    ACTIVE_LOW
-#else
-  #error Unknown Board Indentifier
-#endif
+#define PUSH1_BV          BV(7)
+#define PUSH1_SBIT        P0_7
+#define PUSH1_POLARITY    ACTIVE_HIGH
 
 /* Joystick Center Press */
 #define PUSH2_BV          BV(0)
-#define PUSH2_SBIT        P2_0
+#define PUSH2_SBIT        P1_0
 #define PUSH2_POLARITY    ACTIVE_HIGH
 
 /* ------------------------------------------------------------------------------------------------
@@ -253,7 +246,9 @@ extern void MAC_RfFrontendSetup(void);
   LED3_DDR |= LED3_BV;                                           \
                                                                  \
   /* configure tristates */                                      \
-  P0INP |= PUSH2_BV;                                             \
+  P0INP &= ~PUSH1_BV;                                             \
+  P2INP &= ~0x20;                                                \
+  P1INP &= ~PUSH2_BV;                                            \
 }
 
 #elif defined (HAL_BOARD_CC2530EB_REV13) || defined (HAL_PA_LNA) || defined (HAL_PA_LNA_CC2590)
@@ -432,7 +427,7 @@ st( \
 
 /* Set to TRUE enable LCD usage, FALSE disable it */
 #ifndef HAL_LCD
-#define HAL_LCD TRUE
+#define HAL_LCD FALSE
 #endif
 
 /* Set to TRUE enable LED usage, FALSE disable it */

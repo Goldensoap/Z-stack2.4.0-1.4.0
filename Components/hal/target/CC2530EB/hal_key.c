@@ -22,7 +22,7 @@
   its documentation for any purpose.
 
   YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+  PROVIDED “AS IS?WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
   INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE,
   NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
   TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
@@ -85,7 +85,7 @@
 #include "hal_types.h"
 #include "hal_board.h"
 #include "hal_drivers.h"
-#include "hal_adc.h"
+//#include "hal_adc.h"
 #include "hal_key.h"
 #include "osal.h"
 
@@ -105,11 +105,11 @@
 
 /* CPU port interrupt */
 #define HAL_KEY_CPU_PORT_0_IF P0IF
-#define HAL_KEY_CPU_PORT_2_IF P2IF
+#define HAL_KEY_CPU_PORT_1_IF P1IF
 
-/* SW_6 is at P0.1 */
+/* SW_6 is at P0.7 */
 #define HAL_KEY_SW_6_PORT   P0
-#define HAL_KEY_SW_6_BIT    BV(1)
+#define HAL_KEY_SW_6_BIT    BV(7)
 #define HAL_KEY_SW_6_SEL    P0SEL
 #define HAL_KEY_SW_6_DIR    P0DIR
 
@@ -122,25 +122,25 @@
 #define HAL_KEY_SW_6_IEN      IEN1  /* CPU interrupt mask register */
 #define HAL_KEY_SW_6_IENBIT   BV(5) /* Mask bit for all of Port_0 */
 #define HAL_KEY_SW_6_ICTL     P0IEN /* Port Interrupt Control register */
-#define HAL_KEY_SW_6_ICTLBIT  BV(1) /* P0IEN - P0.1 enable/disable bit */
+#define HAL_KEY_SW_6_ICTLBIT  BV(7) /* P0IEN - P0.1 enable/disable bit */
 #define HAL_KEY_SW_6_PXIFG    P0IFG /* Interrupt flag at source */
 
-/* Joy stick move at P2.0 */
-#define HAL_KEY_JOY_MOVE_PORT   P2
+/* Joy stick move at P1.0 */
+#define HAL_KEY_JOY_MOVE_PORT   P1
 #define HAL_KEY_JOY_MOVE_BIT    BV(0)
-#define HAL_KEY_JOY_MOVE_SEL    P2SEL
-#define HAL_KEY_JOY_MOVE_DIR    P2DIR
+#define HAL_KEY_JOY_MOVE_SEL    P1SEL
+#define HAL_KEY_JOY_MOVE_DIR    P1DIR
 
 /* edge interrupt */
-#define HAL_KEY_JOY_MOVE_EDGEBIT  BV(3)
+#define HAL_KEY_JOY_MOVE_EDGEBIT  BV(0)
 #define HAL_KEY_JOY_MOVE_EDGE     HAL_KEY_FALLING_EDGE
 
 /* Joy move interrupts */
 #define HAL_KEY_JOY_MOVE_IEN      IEN2  /* CPU interrupt mask register */
-#define HAL_KEY_JOY_MOVE_IENBIT   BV(1) /* Mask bit for all of Port_2 */
-#define HAL_KEY_JOY_MOVE_ICTL     P2IEN /* Port Interrupt Control register */
-#define HAL_KEY_JOY_MOVE_ICTLBIT  BV(0) /* P2IENL - P2.0<->P2.3 enable/disable bit */
-#define HAL_KEY_JOY_MOVE_PXIFG    P2IFG /* Interrupt flag at source */
+#define HAL_KEY_JOY_MOVE_IENBIT   BV(4) /* Mask bit for all of Port_1 */
+#define HAL_KEY_JOY_MOVE_ICTL     P1IEN /* Port Interrupt Control register */
+#define HAL_KEY_JOY_MOVE_ICTLBIT  BV(0) /* P1IENL - P2.0<->P2.3 enable/disable bit */
+#define HAL_KEY_JOY_MOVE_PXIFG    P1IFG /* Interrupt flag at source */
 
 #define HAL_KEY_JOY_CHN   HAL_ADC_CHANNEL_6
 
@@ -292,14 +292,14 @@ uint8 HalKeyRead ( void )
 {
   uint8 keys = 0;
 
-  if (HAL_PUSH_BUTTON1())
+  if (!HAL_PUSH_BUTTON1())
   {
-    keys |= HAL_KEY_SW_6;
+    keys |= HAL_KEY_SW_1;
   }
 
-  if ((HAL_KEY_JOY_MOVE_PORT & HAL_KEY_JOY_MOVE_BIT))  /* Key is active low */
+  if (!HAL_PUSH_BUTTON2())  /* Key is active low */
   {
-    keys |= halGetJoyKeyInput();
+    keys |= HAL_KEY_SW_2;
   }
 
   return keys;
@@ -319,9 +319,14 @@ void HalKeyPoll (void)
 {
   uint8 keys = 0;
 
-  if ((HAL_KEY_JOY_MOVE_PORT & HAL_KEY_JOY_MOVE_BIT))  /* Key is active HIGH */
+  if (!HAL_PUSH_BUTTON2())  /* Key is active LOW */
   {
-    keys = halGetJoyKeyInput();
+    keys = HAL_KEY_SW_1;
+  }
+  
+  if (!HAL_PUSH_BUTTON1())
+  {
+    keys |= HAL_KEY_SW_2;
   }
 
   /* If interrupts are not enabled, previous key status and current key status
@@ -342,10 +347,7 @@ void HalKeyPoll (void)
     /* Key interrupt handled here */
   }
 
-  if (HAL_PUSH_BUTTON1())
-  {
-    keys |= HAL_KEY_SW_6;
-  }
+
 
   /* Invoke Callback if new keys were depressed */
   if (keys && (pHalKeyProcessFunction))
@@ -376,8 +378,6 @@ uint8 halGetJoyKeyInput(void)
   do
   {
     ksave1 = ksave0;    /* save previouse key reading */
-
-    adc = HalAdcRead (HAL_KEY_JOY_CHN, HAL_ADC_RESOLUTION_8);
 
     if ((adc >= 2) && (adc <= 38))
     {
@@ -511,7 +511,7 @@ HAL_ISR_FUNCTION( halKeyPort0Isr, P0INT_VECTOR )
  *
  * @return
  **************************************************************************************************/
-HAL_ISR_FUNCTION( halKeyPort2Isr, P2INT_VECTOR )
+HAL_ISR_FUNCTION( halKeyPort1Isr, P1INT_VECTOR )
 {
   HAL_ENTER_ISR();
   
@@ -521,12 +521,11 @@ HAL_ISR_FUNCTION( halKeyPort2Isr, P2INT_VECTOR )
   }
 
   /*
-    Clear the CPU interrupt flag for Port_2
+    Clear the CPU interrupt flag for Port_1
     PxIFG has to be cleared before PxIF
-    Notes: P2_1 and P2_2 are debug lines.
   */
   HAL_KEY_JOY_MOVE_PXIFG = 0;
-  HAL_KEY_CPU_PORT_2_IF = 0;
+  HAL_KEY_CPU_PORT_1_IF = 0;
 
   CLEAR_SLEEP_MODE();
   HAL_EXIT_ISR();

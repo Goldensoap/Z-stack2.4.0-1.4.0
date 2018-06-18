@@ -22,7 +22,7 @@
   its documentation for any purpose.
 
   YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+  PROVIDED “AS IS?WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
   INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE,
   NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
   TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
@@ -150,11 +150,11 @@
 #define HAL_UART_PERCFG_BIT        0x01         // USART0 on P0, Alt-1; so clear this bit.
 #define HAL_UART_Px_RX_TX          0x0C         // Peripheral I/O Select for Rx/Tx.
 #define HAL_UART_Px_RTS            0x20         // Peripheral I/O Select for RTS.
-#define HAL_UART_Px_CTS            0x10         // Peripheral I/O Select for CTS.
+#define HAL_UART_Px_CTS            0x00         // Peripheral I/O Select for CTS.
 #else
 #define HAL_UART_PERCFG_BIT        0x02         // USART1 on P1, Alt-2; so set this bit.
 #define HAL_UART_Px_RTS            0x20         // Peripheral I/O Select for RTS.
-#define HAL_UART_Px_CTS            0x10         // Peripheral I/O Select for CTS.
+#define HAL_UART_Px_CTS            0x00         // Peripheral I/O Select for CTS.
 #define HAL_UART_Px_RX_TX          0xC0         // Peripheral I/O Select for Rx/Tx.
 #endif
 

@@ -22,7 +22,7 @@
   its documentation for any purpose.
 
   YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, 
+  PROVIDED “AS IS?WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, 
   INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE, 
   NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
   TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
@@ -181,9 +181,9 @@ void GenericApp_Init( byte task_id )
   // If the hardware is application specific - add it here.
   // If the hardware is other parts of the device add it in main().
 
-  GenericApp_DstAddr.addrMode = (afAddrMode_t)AddrNotPresent;
-  GenericApp_DstAddr.endPoint = 0;
-  GenericApp_DstAddr.addr.shortAddr = 0;
+  GenericApp_DstAddr.addrMode = (afAddrMode_t)Addr16Bit;
+  GenericApp_DstAddr.endPoint = GENERICAPP_ENDPOINT;
+  GenericApp_DstAddr.addr.shortAddr = 0xFFFF;
 
   // Fill out the endpoint description.
   GenericApp_epDesc.endPoint = GENERICAPP_ENDPOINT;
@@ -197,6 +197,19 @@ void GenericApp_Init( byte task_id )
 
   // Register for all key events - This app will handle all key events
   RegisterForKeys( GenericApp_TaskID );
+  
+  halUARTCfg_t uartConfig;
+  uartConfig.configured           = TRUE;              // 2x30 don't care - see uart driver.
+  uartConfig.baudRate             = HAL_UART_BR_19200;
+  uartConfig.flowControl          = FALSE;
+  uartConfig.flowControlThreshold = 64;   // 2x30 don't care - see uart driver.
+  uartConfig.rx.maxBufSize        = 128;  // 2x30 don't care - see uart driver.
+  uartConfig.tx.maxBufSize        = 128;  // 2x30 don't care - see uart driver.
+  uartConfig.idleTimeout          = 6;    // 2x30 don't care - see uart driver.
+  uartConfig.intEnable            = TRUE; // 2x30 don't care - see uart driver.
+  //uartConfig.callBackFunc =rxCB;
+  HalUARTOpen(0,&uartConfig);
+  HalUARTWrite(0,"system start\r\n",14);
 
   // Update the display
 #if defined ( LCD_SUPPORTED )
@@ -274,6 +287,7 @@ UINT16 GenericApp_ProcessEvent( byte task_id, UINT16 events )
               || (GenericApp_NwkState == DEV_ROUTER)
               || (GenericApp_NwkState == DEV_END_DEVICE) )
           {
+            HalUARTWrite(0,"success join net\r\n",19);
             // Start sending "the" message in a regular interval.
             osal_start_timerEx( GenericApp_TaskID,
                                 GENERICAPP_SEND_MSG_EVT,
@@ -337,13 +351,13 @@ void GenericApp_ProcessZDOMsgs( zdoIncomingMsg_t *inMsg )
       if ( ZDO_ParseBindRsp( inMsg ) == ZSuccess )
       {
         // Light LED
-        HalLedSet( HAL_LED_4, HAL_LED_MODE_ON );
+        HalLedSet( HAL_LED_1, HAL_LED_MODE_ON );
       }
 #if defined(BLINK_LEDS)
       else
       {
         // Flash LED to show failure
-        HalLedSet ( HAL_LED_4, HAL_LED_MODE_FLASH );
+        HalLedSet ( HAL_LED_1, HAL_LED_MODE_FLASH );
       }
 #endif
       break;
@@ -361,7 +375,7 @@ void GenericApp_ProcessZDOMsgs( zdoIncomingMsg_t *inMsg )
             GenericApp_DstAddr.endPoint = pRsp->epList[0];
 
             // Light LED
-            HalLedSet( HAL_LED_4, HAL_LED_MODE_ON );
+            HalLedSet( HAL_LED_1, HAL_LED_MODE_ON );
           }
           osal_mem_free( pRsp );
         }
@@ -406,13 +420,19 @@ void GenericApp_HandleKeys( byte shift, byte keys )
   }
   else
   {
-    if ( keys & HAL_KEY_SW_1 )
-    {
-    }
-
     if ( keys & HAL_KEY_SW_2 )
     {
-      HalLedSet ( HAL_LED_4, HAL_LED_MODE_OFF );
+      HalLedSet ( HAL_LED_1, HAL_LED_MODE_ON );
+    }
+    
+    if ( keys & HAL_KEY_SW_1 )
+    {
+      HalLedSet ( HAL_LED_1, HAL_LED_MODE_OFF );
+    }
+
+    if ( keys & HAL_KEY_SW_6 )
+    {
+      HalLedSet ( HAL_LED_1, HAL_LED_MODE_OFF );
 
       // Initiate an End Device Bind Request for the mandatory endpoint
       dstAddr.addrMode = Addr16Bit;
@@ -424,14 +444,10 @@ void GenericApp_HandleKeys( byte shift, byte keys )
                             GENERICAPP_MAX_CLUSTERS, (cId_t *)GenericApp_ClusterList,
                             FALSE );
     }
-
-    if ( keys & HAL_KEY_SW_3 )
-    {
-    }
-
+    
     if ( keys & HAL_KEY_SW_4 )
     {
-      HalLedSet ( HAL_LED_4, HAL_LED_MODE_OFF );
+      HalLedSet ( HAL_LED_1, HAL_LED_MODE_OFF );
       // Initiate a Match Description Request (Service Discovery)
       dstAddr.addrMode = AddrBroadcast;
       dstAddr.addr.shortAddr = NWK_BROADCAST_SHORTADDR;
@@ -461,9 +477,11 @@ void GenericApp_HandleKeys( byte shift, byte keys )
  */
 void GenericApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
 {
+  HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength);
   switch ( pkt->clusterId )
   {
     case GENERICAPP_CLUSTERID:
+     
       // "the" message
 #if defined( LCD_SUPPORTED )
       HalLcdWriteScreen( (char*)pkt->cmd.Data, "rcvd" );
@@ -495,9 +513,11 @@ void GenericApp_SendTheMessage( void )
                        AF_DISCV_ROUTE, AF_DEFAULT_RADIUS ) == afStatus_SUCCESS )
   {
     // Successfully requested to be sent.
+    HalUARTWrite(0,"success send messages",21);
   }
   else
   {
+    HalUARTWrite(0,"success send failed",19);
     // Error occurred in request to send.
   }
 }
