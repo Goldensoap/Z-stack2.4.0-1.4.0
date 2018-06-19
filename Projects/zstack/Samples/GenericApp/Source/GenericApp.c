@@ -65,6 +65,7 @@
 #include "ZDApp.h"
 #include "ZDObject.h"
 #include "ZDProfile.h"
+#include "OnBoard.h"
 
 #include "GenericApp.h"
 #include "DebugTrace.h"
@@ -74,11 +75,10 @@
 #endif
 
 /* HAL */
-#include "hal_oled_iic.h"
 #include "hal_led.h"
 #include "hal_key.h"
 #include "hal_uart.h"
-
+#include "hal_oled.h"
 /*********************************************************************
  * MACROS
  */
@@ -209,12 +209,12 @@ void GenericApp_Init( byte task_id )
   uartConfig.intEnable            = TRUE; // 2x30 don't care - see uart driver.
   //uartConfig.callBackFunc =rxCB;
   HalUARTOpen(0,&uartConfig);
+  MicroWait(100);
   HalUARTWrite(0,"system start\r\n",14);
-
+  
   // Update the display
 
-  OLED_ShowString(16,0,"GenericApp",10);
-
+  Hal_Oled_WriteString(HAL_OLED_XSTART,HAL_OLED_LINE_1,"GenericApp",SIZE1 );
     
   ZDO_RegisterForZDOMsg( GenericApp_TaskID, End_Device_Bind_rsp );
   ZDO_RegisterForZDOMsg( GenericApp_TaskID, Match_Desc_rsp );
@@ -478,6 +478,7 @@ void GenericApp_HandleKeys( byte shift, byte keys )
 void GenericApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
 {
   HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength);
+  Hal_Oled_WriteString(HAL_OLED_XSTART,HAL_OLED_LINE_6,pkt->cmd.Data,SIZE1);
   switch ( pkt->clusterId )
   {
     case GENERICAPP_CLUSTERID:
@@ -512,10 +513,14 @@ void GenericApp_SendTheMessage( void )
   {
     // Successfully requested to be sent.
     HalUARTWrite(0,"success send messages",21);
+    //OLED_Clear();
+    Hal_Oled_WriteString(HAL_OLED_XSTART,HAL_OLED_LINE_5,"send success",SIZE1 );
   }
   else
   {
-    HalUARTWrite(0,"success send failed",19);
+    HalUARTWrite(0,"send failed",11);
+    //OLED_Clear();
+    Hal_Oled_WriteString(HAL_OLED_XSTART,HAL_OLED_LINE_5,"send failed",SIZE1 );
     // Error occurred in request to send.
   }
 }

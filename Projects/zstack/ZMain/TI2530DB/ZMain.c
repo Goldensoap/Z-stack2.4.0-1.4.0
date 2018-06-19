@@ -23,7 +23,7 @@
   its documentation for any purpose.
 
   YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+  PROVIDED “AS IS?WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
   INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE,
   NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
   TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
@@ -47,7 +47,7 @@
 #endif
 #include "hal_adc.h"
 #include "hal_flash.h"
-#include "hal_lcd.h"
+#include "hal_oled.h"
 #include "hal_led.h"
 #include "hal_drivers.h"
 #include "OnBoard.h"
@@ -67,7 +67,7 @@ static void zmain_cert_init( void );
 static void zmain_dev_info( void );
 static void zmain_vdd_check( void );
 
-#ifdef LCD_SUPPORTED
+#if (defined HAL_OLED) && (HAL_OLED == TRUE)
 static void zmain_lcd_init( void );
 #endif
 
@@ -128,7 +128,7 @@ int main( void )
   zmain_dev_info();
 
   /* Display the device info on the LCD */
-#ifdef LCD_SUPPORTED
+#if (defined HAL_OLED) && (HAL_OLED == TRUE)
   zmain_lcd_init();
 #endif
 
@@ -310,7 +310,7 @@ static void zmain_cert_init(void)
  */
 static void zmain_dev_info(void)
 {
-#ifdef LCD_SUPPORTED
+#if (defined HAL_OLED) && (HAL_OLED == TRUE)
   uint8 i;
   uint8 *xad;
   uint8 lcd_buf[Z_EXTADDR_LEN*2+1];
@@ -327,12 +327,14 @@ static void zmain_dev_info(void)
     lcd_buf[i++] = ch + (( ch < 10 ) ? '0' : '7');
   }
   lcd_buf[Z_EXTADDR_LEN*2] = '\0';
-  HalLcdWriteString( "IEEE: ", HAL_LCD_LINE_1 );
-  HalLcdWriteString( (char*)lcd_buf, HAL_LCD_LINE_2 );
+  //HalLcdWriteString( "IEEE: ", HAL_LCD_LINE_1 );
+  Hal_Oled_WriteString(HAL_OLED_XSTART,HAL_OLED_LINE_1,"IEEE: ",SIZE1 );
+  //HalLcdWriteString( (char*)lcd_buf, HAL_LCD_LINE_2 );
+  Hal_Oled_WriteString(HAL_OLED_XSTART,HAL_OLED_LINE_2,(char*)lcd_buf,SIZE1 );
 #endif
 }
 
-#ifdef LCD_SUPPORTED
+#if (defined HAL_OLED) && (HAL_OLED == TRUE)
 /*********************************************************************
  * @fn      zmain_lcd_init
  * @brief   Initialize LCD at start up.
@@ -342,19 +344,19 @@ static void zmain_lcd_init ( void )
 {
 #ifdef SERIAL_DEBUG_SUPPORTED
   {
-    HalLcdWriteString( "TexasInstruments", HAL_LCD_LINE_1 );
+    Hal_Oled_WriteString(HAL_OLED_XSTART,HAL_OLED_LINE_1,"TexasInstruments",SIZE1 );
 
 #if defined( MT_MAC_FUNC )
 #if defined( ZDO_COORDINATOR )
-      HalLcdWriteString( "MAC-MT Coord", HAL_LCD_LINE_2 );
+      Hal_Oled_WriteString(HAL_OLED_XSTART,HAL_OLED_LINE_2,"MAC-MT Coord",SIZE1 );
 #else
-      HalLcdWriteString( "MAC-MT Device", HAL_LCD_LINE_2 );
+      Hal_Oled_WriteString(HAL_OLED_XSTART,HAL_OLED_LINE_2,"MAC-MT Device",SIZE1 );
 #endif // ZDO
 #elif defined( MT_NWK_FUNC )
 #if defined( ZDO_COORDINATOR )
-      HalLcdWriteString( "NWK Coordinator", HAL_LCD_LINE_2 );
+      Hal_Oled_WriteString(HAL_OLED_XSTART,HAL_OLED_LINE_2,"NWK Coordinator",SIZE1 );
 #else
-      HalLcdWriteString( "NWK Device", HAL_LCD_LINE_2 );
+      Hal_Oled_WriteString(HAL_OLED_XSTART,HAL_OLED_LINE_2,"NWK Device",SIZE1 );
 #endif // ZDO
 #endif // MT_FUNC
   }

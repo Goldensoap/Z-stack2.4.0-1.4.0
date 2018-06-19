@@ -50,7 +50,7 @@
 #endif
 #include "hal_key.h"
 #include "hal_lcd.h"
-#include "hal_oled_iic.h"
+#include "hal_oled.h"
 #include "hal_led.h"
 #include "hal_timer.h"
 #include "hal_uart.h"
@@ -154,8 +154,9 @@ void HalDriverInit (void)
 #endif
   
   /*OLED_iic*/
-#if (defined HAL_OLED_IIC) && (HAL_OLED_IIC == TRUE)
+#if (defined HAL_OLED) && (HAL_OLED == TRUE)
   OLED_Init();
+  OLED_Clear();
 #endif
   
   /* LED */
