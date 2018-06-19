@@ -8,6 +8,10 @@
 
     如果想让按键具有shift功能，只需修改 **hal_key.c中HalKeyPoll**函数下两个button判断，任意一个按键宏改为6，或更改onboard.c 下 **OnBoard_KeyCallback ( uint8 keys, uint8 state )** 函数中 shift 指定的宏
 
+- OLED采用板上IIC接口，基本函数Hal_Oled_WriteString(u8 x,u8 y, u8 *p,u8 Char_Size)  
+  前两个参数控制字符串在屏幕中的位置，x 0~128 可用宏定义，y 0到7 可用宏定义，第三个参数是放置字符串的位置，可采用指针形式，最后一个指定字号大小有8x16和6x8 两种可用宏定义。
+    宏定义的详情参考release
+
 ## 基础deemo 是广播的helloworld互传，可根据需要自行更改
 
 - 详细修改情况请自行查看commit记录
